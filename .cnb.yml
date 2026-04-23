@@ -1,0 +1,19 @@
+main:
+  vscode:
+    - runner:
+        cpus: 4
+      docker:
+        image: docker.cnb.cool/zhxycn/env:latest
+      services:
+        - docker
+        - name: vscode
+          options:
+            onlyPreview: true
+            launch: >-
+              bash -c 'export NVM_DIR="${NVM_DIR:-$HOME/.nvm}";
+              [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh";
+              nvm use default >/dev/null 2>&1 || true;
+              pnpm install && pnpm build && PORT=8686 pnpm start'
+            keepAliveTimeout: 3600000
+            daemon: true
+            backup: false
