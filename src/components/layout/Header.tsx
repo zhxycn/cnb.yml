@@ -1,14 +1,24 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { NpcIcon } from "@/components/ai/NpcIcon";
 import { useConfig } from "@/contexts/ConfigContext";
 
 interface HeaderProps {
   sidebarOpen?: boolean;
   onToggleSidebar?: () => void;
+  npcEnabled?: boolean;
+  npcOpen?: boolean;
+  onToggleNpc?: () => void;
 }
 
-export function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
+export function Header({
+  sidebarOpen,
+  onToggleSidebar,
+  npcEnabled,
+  npcOpen,
+  onToggleNpc,
+}: HeaderProps) {
   const { yamlText, importYaml } = useConfig();
   const [copied, setCopied] = useState(false);
   const [showImport, setShowImport] = useState(false);
@@ -105,6 +115,21 @@ export function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
           >
             下载 .cnb.yml
           </button>
+          {npcEnabled && onToggleNpc && (
+            <button
+              type="button"
+              onClick={onToggleNpc}
+              className={`ml-1 flex items-center gap-1.5 px-2.5 py-1.5 text-xs rounded transition-colors ${
+                npcOpen
+                  ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
+                  : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+              }`}
+              title={npcOpen ? "收起 NPC" : "展开 NPC"}
+            >
+              <NpcIcon className="w-4 h-4" />
+              <span className="hidden sm:inline font-medium">NPC</span>
+            </button>
+          )}
         </div>
       </header>
 

@@ -16,6 +16,8 @@ import { StageList } from "./StageList";
 
 const KNOWN_SERVICES = ["docker", "vscode"] as const;
 
+const getServiceName = (s: ServiceItem) => (typeof s === "string" ? s : s.name);
+
 function toArray(v: string | string[] | undefined): string[] {
   if (v === undefined || v === null) return [];
   if (Array.isArray(v)) return v;
@@ -50,8 +52,6 @@ export function BlockFormCard({ block }: BlockFormCardProps) {
         : "";
 
   const servicesList = block.pipeline.services ?? [];
-  const getServiceName = (s: ServiceItem) =>
-    typeof s === "string" ? s : s.name;
   const serviceNames = servicesList.map(getServiceName);
   const dockerService = servicesList.find(
     (s) => getServiceName(s) === "docker",
@@ -402,7 +402,7 @@ export function BlockFormCard({ block }: BlockFormCardProps) {
                 </p>
               )}
               {imports.map((imp, idx) => (
-                <div key={idx} className="flex gap-1.5">
+                <div key={`import-${idx}-${imp}`} className="flex gap-1.5">
                   <input
                     className="flex-1 px-2 py-1.5 text-xs font-mono bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded focus:ring-1 focus:ring-blue-500 outline-none"
                     value={imp}

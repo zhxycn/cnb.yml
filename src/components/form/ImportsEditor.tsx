@@ -38,7 +38,7 @@ export function ImportsEditor({ value, onChange }: ImportsEditorProps) {
   return (
     <div className="space-y-1.5">
       {items.map((item, idx) => (
-        <div key={idx} className="flex gap-1.5">
+        <div key={`${idx}-${item}`} className="flex gap-1.5">
           <input
             className="flex-1 px-2 py-1 text-xs font-mono bg-white dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-600 rounded focus:ring-1 focus:ring-blue-500 outline-none"
             value={item}

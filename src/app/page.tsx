@@ -1,15 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import { AiAssistant } from "@/components/ai/AiAssistant";
 import { FormEditor } from "@/components/form/FormEditor";
 import { Header } from "@/components/layout/Header";
 import { Sidebar } from "@/components/sidebar/Sidebar";
 import { YamlEditor } from "@/components/yaml/YamlEditor";
 import { ConfigProvider } from "@/contexts/ConfigContext";
 
+const AI_ENABLED = !!process.env.NEXT_PUBLIC_AI_ENABLED;
+
 export default function Home() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState<"form" | "yaml">("form");
+  const [npcOpen, setNpcOpen] = useState(false);
 
   return (
     <ConfigProvider>
@@ -17,14 +21,18 @@ export default function Home() {
         <Header
           sidebarOpen={sidebarOpen}
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
+          npcEnabled={AI_ENABLED}
+          npcOpen={npcOpen}
+          onToggleNpc={() => setNpcOpen(!npcOpen)}
         />
         <div className="flex-1 flex min-h-0">
           {/* Mobile overlay backdrop */}
           {sidebarOpen && (
-            <div
+            <button
+              type="button"
               className="fixed inset-0 z-20 bg-black/40 md:hidden"
               onClick={() => setSidebarOpen(false)}
-              onKeyDown={() => {}}
+              aria-label="关闭侧边栏"
             />
           )}
           {/* Sidebar - desktop inline, mobile overlay */}
@@ -72,6 +80,10 @@ export default function Home() {
               <YamlEditor />
             </div>
           </div>
+          {/* NPC panel - right sidebar */}
+          {AI_ENABLED && (
+            <AiAssistant open={npcOpen} onClose={() => setNpcOpen(false)} />
+          )}
         </div>
       </div>
     </ConfigProvider>

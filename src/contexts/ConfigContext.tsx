@@ -18,12 +18,24 @@ function newBlockId(): string {
   return `blk-${Date.now()}-${++blockIdCounter}`;
 }
 
+export interface RemovedZone {
+  afterLine: number;
+  text: string;
+}
+
+export interface DiffState {
+  beforeYaml: string;
+  addedLines: number[];
+  removedZones: RemovedZone[];
+}
+
 interface ConfigState {
   blocks: PipelineBlock[];
   selectedBlockId: string | null;
   yamlText: string;
   yamlError: string | null;
   editSource: "form" | "yaml";
+  diffState: DiffState | null;
 }
 
 interface ConfigActions {
@@ -35,6 +47,13 @@ interface ConfigActions {
   updateYamlText: (text: string) => void;
   importYaml: (text: string) => string | null;
   moveBlock: (fromIndex: number, toIndex: number) => void;
+  applyDiffToEditor: (
+    newYaml: string,
+    addedLines: number[],
+    removedZones: RemovedZone[],
+  ) => void;
+  acceptDiff: () => void;
+  rejectDiff: () => void;
 }
 
 const ConfigCtx = createContext<(ConfigState & ConfigActions) | null>(null);
@@ -44,6 +63,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
   const [selectedBlockId, setSelectedBlockId] = useState<string | null>(null);
   const [yamlText, setYamlText] = useState("# 从左侧添加流水线片段开始配置\n");
   const [yamlError, setYamlError] = useState<string | null>(null);
+  const [diffState, setDiffState] = useState<DiffState | null>(null);
   const editSourceRef = useRef<"form" | "yaml">("form");
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
@@ -151,6 +171,37 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
     return null;
   }, []);
 
+  const applyDiffToEditor = useCallback(
+    (newYaml: string, addedLines: number[], removedZones: RemovedZone[]) => {
+      setDiffState({ beforeYaml: yamlText, addedLines, removedZones });
+      setYamlText(newYaml);
+      editSourceRef.current = "yaml";
+      const result = tryParseYaml(newYaml);
+      if (!("error" in result)) {
+        setYamlError(null);
+        setBlocks((prev) => matchBlockIds(prev, result.blocks));
+      }
+    },
+    [yamlText],
+  );
+
+  const acceptDiff = useCallback(() => {
+    setDiffState(null);
+  }, []);
+
+  const rejectDiff = useCallback(() => {
+    if (!diffState) return;
+    const prev = diffState.beforeYaml;
+    setDiffState(null);
+    setYamlText(prev);
+    editSourceRef.current = "yaml";
+    const result = tryParseYaml(prev);
+    if (!("error" in result)) {
+      setYamlError(null);
+      setBlocks((prevBlocks) => matchBlockIds(prevBlocks, result.blocks));
+    }
+  }, [diffState]);
+
   const moveBlock = useCallback(
     (fromIndex: number, toIndex: number) => {
       setBlocks((prev) => {
@@ -172,6 +223,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
       yamlText,
       yamlError,
       editSource: editSourceRef.current,
+      diffState,
       addBlock,
       addBlankBlock,
       removeBlock,
@@ -180,12 +232,16 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
       updateYamlText,
       importYaml,
       moveBlock,
+      applyDiffToEditor,
+      acceptDiff,
+      rejectDiff,
     }),
     [
       blocks,
       selectedBlockId,
       yamlText,
       yamlError,
+      diffState,
       addBlock,
       addBlankBlock,
       removeBlock,
@@ -194,6 +250,9 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
       updateYamlText,
       importYaml,
       moveBlock,
+      applyDiffToEditor,
+      acceptDiff,
+      rejectDiff,
     ],
   );
 

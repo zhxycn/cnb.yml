@@ -26,6 +26,9 @@
         "noSvgWithoutTitle": "off",
         "noLabelWithoutControl": "off",
         "useSemanticElements": "off"
+      },
+      "complexity": {
+        "noImportantStyles": "off"
       }
     },
     "domains": {

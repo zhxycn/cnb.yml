@@ -128,7 +128,7 @@ export function ServicesEditor({ value, onChange }: ServicesEditorProps) {
 
             return (
               <div
-                key={idx}
+                key={`${idx}-${normalized.name}`}
                 className="border border-zinc-200 dark:border-zinc-700 rounded-md"
               >
                 <div className="flex items-center justify-between px-2.5 py-1.5">
